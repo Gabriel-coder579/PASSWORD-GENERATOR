@@ -1,46 +1,106 @@
-
-from flask import Flask, request, jsonify, render_template
 import random
 import string
-from password import generate_password, check_password_strength, get_suggestions
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__)
+# Enable Cross-Origin Resource Sharing (CORS) so your HTML frontend can safely call this API
+CORS(app)
 
-@app.after_request
-def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-    return response
-
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-@app.route('/generate', methods=['POST'])
-def generate():
-    data = request.get_json()
-    length = data.get('length', 12)
-    try:
-        length = int(length)
-    except (ValueError, TypeError):
-        length = 12
+def generate_password(length=12):
+    """
+    Generates a secure, random password of a given length
+    using letters, digits, and punctuation.
+    """
+    # Use letters, digits, and punctuation for strong passwords
     chars = string.ascii_letters + string.digits + string.punctuation
     password = ''.join(random.choice(chars) for _ in range(length))
-    return jsonify({'password': password})
+    return password
+
+def check_password_strength(password):
+    """
+    Checks if a password meets the basic strength guidelines:
+    - At least 8 characters
+    - At least one uppercase letter
+    - At least one lowercase letter
+    - At least one digit
+    - At least one special character
+    """
+    if len(password) < 8:
+        return False
+    has_upper = any(c.isupper() for c in password)
+    has_lower = any(c.islower() for c in password)
+    has_digit = any(c.isdigit() for c in password)
+    has_special = any(c in string.punctuation for c in password)
+    return has_upper and has_lower and has_digit and has_special
+
+def get_suggestions(password):
+    """
+    Analyzes the password and returns up to 2 suggestions to make it stronger.
+    """
+    suggestions = []
+    if len(password) < 8:
+        suggestions.append("Make your password at least 8 characters long.")
+    if not any(c.isupper() for c in password):
+        suggestions.append("Include at least one uppercase letter.")
+    if not any(c.islower() for c in password):
+        suggestions.append("Include at least one lowercase letter.")
+    if not any(c.isdigit() for c in password):
+        suggestions.append("Include at least one number.")
+    if not any(c in string.punctuation for c in password):
+        suggestions.append("Include at least one special character.")
+    # Returning only up to 2 suggestions to keep UI clean
+    return suggestions[:2]
+
+# --- API ENDPOINTS ---
+
+@app.route('/generate', methods=['POST'])
+def api_generate():
+    """
+    POST Endpoint: Generates a random password based on requested length.
+    Input JSON: { "length": 12 }
+    """
+    data = request.get_json() or {}
+    try:
+        # Get length from payload, defaulting to 12 if invalid or missing
+        length = int(data.get('length', 12))
+        if length < 4 or length > 64:
+            length = 12
+    except (ValueError, TypeError):
+        length = 12
+
+    password = generate_password(length)
+    return jsonify({"password": password})
 
 @app.route('/check', methods=['POST'])
-def check():
-    data = request.get_json()
+def api_check():
+    """
+    POST Endpoint: Checks strength of incoming password and suggests 
+    strong alternatives if it fails security criteria.
+    Input JSON: { "password": "user_input" }
+    """
+    data = request.get_json() or {}
     password = data.get('password', '')
+
     is_strong = check_password_strength(password)
-    suggestions = get_suggestions(password) if not is_strong else []
-    generated = [generate_password() for _ in range(2)]
+    suggestions = get_suggestions(password)
+    
+    # Generate 2 highly secure alternative passwords if the user's password is weak
+    generated_alternatives = []
+    if not is_strong:
+        for _ in range(2):
+            alt_pass = generate_password(12)
+            # Ensure generated alternative is actually strong before recommending it
+            while not check_password_strength(alt_pass):
+                alt_pass = generate_password(12)
+            generated_alternatives.append(alt_pass)
+
     return jsonify({
-        'is_strong': is_strong,
-        'suggestions': suggestions,
-        'generated': generated
+        "is_strong": is_strong,
+        "suggestions": suggestions,
+        "generated": generated_alternatives
     })
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    # Runs local server on port 5000 for development testing
+    app.run(debug=True, port=5000)
