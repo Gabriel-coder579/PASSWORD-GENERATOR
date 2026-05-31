@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Generator & Checker</title>
+    <!-- Tailwind CSS for sleek, modern, responsive aesthetics -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Smooth transition animations for interactive components */
+        .transition-all-300 {
+            transition: all 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between font-sans selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Status Ribbon indicating backend state -->
+    <header class="w-full bg-white border-b border-slate-100 py-3 px-6 shadow-sm">
+        <div class="max-w-4xl mx-auto flex justify-between items-center flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-indigo-600 animate-pulse"></span>
+                <span class="font-bold text-slate-800 tracking-tight">VaultGuard</span>
+            </div>
+            <!-- Dynamic Connection State Badge -->
+            <div id="api-status" class="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1 rounded-full flex items-center gap-1.5 font-medium">
+                <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Checking API Status (Awaiting Spin-up)...
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-xl w-full mx-auto px-4 py-8 flex-grow flex flex-col justify-center gap-8">
+        
+        <!-- SECTION 1: PASSWORD CHECKER -->
+        <section class="bg-white rounded-2xl shadow-md border border-slate-100 p-6 transition-all-300 hover:shadow-lg">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="p-2.5 bg-indigo-50 rounded-lg text-indigo-600">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Password Checker</h2>
+                    <p class="text-xs text-slate-400">Evaluate security & fix vulnerabilities</p>
+                </div>
+            </div>
+
+            <form id="checkForm" class="space-y-4">
+                <div class="space-y-1.5">
+                    <label for="password" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Enter Your Password</label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            placeholder="Enter password..."
+                            class="w-full pl-4 pr-12 py-3 rounded-xl border border-slate-200 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 text-slate-700 transition-all-300 font-mono text-sm"
+                            required
+                        >
+                        <!-- Visibility Toggle Button (The Eye Icon) -->
+                        <button 
+                            type="button" 
+                            id="toggleVisibility" 
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none p-1.5"
+                            title="Toggle visibility"
+                        >
+                            <!-- SVG for hidden password state -->
+                            <svg id="eyeClosedIcon" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                            </svg>
+                            <!-- SVG for shown password state (hidden by default) -->
+                            <svg id="eyeOpenIcon" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dynamic Realtime Password Strength Bar Indicator -->
+                <div class="space-y-1.5">
+                    <div class="flex justify-between items-center text-xs font-semibold text-slate-400">
+                        <span>ESTIMATED STRENGTH</span>
+                        <span id="strengthText">None</span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden flex gap-0.5">
+                        <div id="bar-1" class="h-full w-1/4 bg-slate-200 transition-all-300"></div>
+                        <div id="bar-2" class="h-full w-1/4 bg-slate-200 transition-all-300"></div>
+                        <div id="bar-3" class="h-full w-1/4 bg-slate-200 transition-all-300"></div>
+                        <div id="bar-4" class="h-full w-1/4 bg-slate-200 transition-all-300"></div>
+                    </div>
+                </div>
+
+                <button 
+                    type="submit" 
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-xl shadow-sm transition-all-300 active:scale-[0.98] focus:ring-4 focus:ring-indigo-100"
+                >
+                    Check Password
+                </button>
+            </form>
+
+            <!-- Render/Local API Output Result container -->
+            <div id="checkResult" class="mt-5 space-y-4 hidden"></div>
+        </section>
+
+        <!-- SECTION 2: PASSWORD GENERATOR -->
+        <section class="bg-white rounded-2xl shadow-md border border-slate-100 p-6 transition-all-300 hover:shadow-lg">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="p-2.5 bg-emerald-50 rounded-lg text-emerald-600">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Password Generator</h2>
+                    <p class="text-xs text-slate-400">Instantly generate heavy-duty keys</p>
+                </div>
+            </div>
+
+            <form id="passwordForm" class="space-y-4">
+                <div class="space-y-1.5">
+                    <div class="flex justify-between items-center">
+                        <label for="length" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Password Length</label>
+                        <span id="lengthVal" class="text-sm font-bold text-emerald-600 font-mono">12</span>
+                    </div>
+                    <!-- Custom styled slider for password length -->
+                    <input 
+                        type="range" 
+                        id="length" 
+                        name="length" 
+                        min="6" 
+                        max="32" 
+                        value="12" 
+                        class="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-500 focus:outline-none"
+                    >
+                </div>
+
+                <button 
+                    type="submit" 
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-xl shadow-sm transition-all-300 active:scale-[0.98] focus:ring-4 focus:ring-emerald-100"
+                >
+                    Generate Password
+                </button>
+            </form>
+
+            <!-- Result displaying generated secret code + clipboard action -->
+            <div id="result" class="mt-5 hidden"></div>
+        </section>
+
+    </main>
+
+    <!-- Footer credit with client mode indicator -->
+    <footer class="w-full text-center py-6 text-slate-400 text-xs border-t border-slate-100 bg-white">
+        <p>© 2026 VaultGuard Secure Corp. Running with automatic offline local engine redundancy.</p>
+    </footer>
+
+    <!-- EMBEDDED JAVASCRIPT: Unified network controller, local python equivalents and client-side UI dynamics -->
+    <script>
+        // Constant App Parameters
+        const BACKEND_URL = 'https://password-generator-kgvg.onrender.com';
+        
+        // Setup State elements & Variables
+        let isUsingFallback = false;
+        const lengthSlider = document.getElementById('length');
+        const lengthValDisplay = document.getElementById('lengthVal');
+
+        // Dynamic Slider Length Counter update
+        lengthSlider.addEventListener('input', (e) => {
+            lengthValDisplay.textContent = e.target.value;
+        });
+
+        // Toggle Password visibility
+        const toggleVisibilityBtn = document.getElementById('toggleVisibility');
+        const passwordInput = document.getElementById('password');
+        const eyeClosedIcon = document.getElementById('eyeClosedIcon');
+        const eyeOpenIcon = document.getElementById('eyeOpenIcon');
+
+        toggleVisibilityBtn.addEventListener('click', () => {
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeClosedIcon.classList.add('hidden');
+                eyeOpenIcon.classList.remove('hidden');
+            } else {
+                passwordInput.type = 'password';
+                eyeClosedIcon.classList.remove('hidden');
+                eyeOpenIcon.classList.add('hidden');
+            }
+        });
+
+        // -------------------------------------------------------------
+        // LOCAL ENGINE CORE (Direct counterparts of Python logic for resilient fallbacks)
+        // -------------------------------------------------------------
+        const PUNCTUATION = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+        
+        function localGeneratePassword(length = 12) {
+            const letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const digits = '0123456789';
+            const chars = letters + digits + PUNCTUATION;
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        function localCheckPasswordStrength(pass) {
+            if (pass.length < 8) return false;
+            const hasUpper = /[A-Z]/.test(pass);
+            const hasLower = /[a-z]/.test(pass);
+            const hasDigit = /[0-9]/.test(pass);
+            const hasSpecial = [...pass].some(char => PUNCTUATION.includes(char));
+            return hasUpper && hasLower && hasDigit && hasSpecial;
+        }
+
+        function localGetSuggestions(pass) {
+            const suggestions = [];
+            if (pass.length < 8) {
+                suggestions.push("Make your password at least 8 characters long.");
+            }
+            if (!/[A-Z]/.test(pass)) {
+                suggestions.push("Include at least one uppercase letter.");
+            }
+            if (!/[a-z]/.test(pass)) {
+                suggestions.push("Include at least one lowercase letter.");
+            }
+            if (!/[0-9]/.test(pass)) {
+                suggestions.push("Include at least one number.");
+            }
+            if (![...pass].some(char => PUNCTUATION.includes(char))) {
+                suggestions.push("Include at least one special character.");
+            }
+            return suggestions.slice(0, 2);
+        }
+
+        // Generate 2 guaranteed strong alternative passwords locally
+        function generateLocalStrongAlternatives() {
+            const alts = [];
+            for (let i = 0; i < 2; i++) {
+                let generated;
+                do {
+                    generated = localGeneratePassword(12);
+                } while(!localCheckPasswordStrength(generated));
+                alts.push(generated);
+            }
+            return alts;
+        }
+
+        // -------------------------------------------------------------
+        // NETWORK API CONTROLLERS
+        // -------------------------------------------------------------
+        
+        // Run health check against Render web service on startup
+        async function inspectBackendService() {
+            const statusBadge = document.getElementById('api-status');
+            try {
+                // Fetch to determine if online (endpoint generates simple sample to test)
+                const response = await fetch(`${BACKEND_URL}/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ length: 8 })
+                });
+                if (response.ok) {
+                    statusBadge.innerHTML = `
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                        Backend API Live
+                    `;
+                    statusBadge.className = "text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full flex items-center gap-1.5 font-medium";
+                    isUsingFallback = false;
+                } else {
+                    throw new Error('Server issues');
+                }
+            } catch (err) {
+                // If Render takes time or is sleeping, switch smoothly to Sandbox Local Engine
+                statusBadge.innerHTML = `
+                    <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+                    Running on Local Sandbox (Resilient Mode)
+                `;
+                statusBadge.className = "text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1 rounded-full flex items-center gap-1.5 font-medium";
+                isUsingFallback = true;
+            }
+        }
+
+        // Generate call handler
+        async function requestPassword(length) {
+            if (isUsingFallback) {
+                return localGeneratePassword(length);
+            }
+            try {
+                const response = await fetch(`${BACKEND_URL}/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ length })
+                });
+                if (!response.ok) throw new Error('Render response error');
+                const data = await response.json();
+                return data.password;
+            } catch (err) {
+                // Silently fallback if server timing out
+                return localGeneratePassword(length);
+            }
+        }
+
+        // Check call handler
+        async function checkPassword(password) {
+            if (isUsingFallback) {
+                return {
+                    is_strong: localCheckPasswordStrength(password),
+                    suggestions: localGetSuggestions(password),
+                    generated: generateLocalStrongAlternatives()
+                };
+            }
+            try {
+                const response = await fetch(`${BACKEND_URL}/check`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+                if (!response.ok) throw new Error('Render response error');
+                return await response.json();
+            } catch (err) {
+                // Silently check locally upon server failure
+                return {
+                    is_strong: localCheckPasswordStrength(password),
+                    suggestions: localGetSuggestions(password),
+                    generated: generateLocalStrongAlternatives()
+                };
+            }
+        }
+
+        // -------------------------------------------------------------
+        // DOM EVENTS & FORM INTERACTION HANDLING
+        // -------------------------------------------------------------
+        
+        // Copy to clipboard fallback function per layout rules
+        function copyTextToClipboard(text, alertBoxId) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";  // Avoid scrolling to bottom
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                const btn = document.getElementById(alertBoxId);
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = `
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Copied!
+                `;
+                setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
+            } catch (err) {
+                console.error('Fallback clipboard failure', err);
+            }
+            document.body.removeChild(textArea);
+        }
+
+        // Interactive visual password strength meter feedback loop
+        passwordInput.addEventListener('input', (e) => {
+            const pass = e.target.value;
+            const bar1 = document.getElementById('bar-1');
+            const bar2 = document.getElementById('bar-2');
+            const bar3 = document.getElementById('bar-3');
+            const bar4 = document.getElementById('bar-4');
+            const txt = document.getElementById('strengthText');
+
+            // Reset strength meters
+            bar1.className = "h-full w-1/4 bg-slate-200 transition-all-300";
+            bar2.className = "h-full w-1/4 bg-slate-200 transition-all-300";
+            bar3.className = "h-full w-1/4 bg-slate-200 transition-all-300";
+            bar4.className = "h-full w-1/4 bg-slate-200 transition-all-300";
+
+            if (pass.length === 0) {
+                txt.textContent = "None";
+                txt.className = "text-xs font-semibold text-slate-400";
+                return;
+            }
+
+            // Calculation criteria metrics
+            let score = 0;
+            if (pass.length >= 8) score++;
+            if (/[A-Z]/.test(pass) && /[a-z]/.test(pass)) score++;
+            if (/[0-9]/.test(pass)) score++;
+            if ([...pass].some(char => PUNCTUATION.includes(char))) score++;
+
+            // Rendering custom colors based on scores
+            if (score === 1) {
+                bar1.className = "h-full w-1/4 bg-red-500 transition-all-300";
+                txt.textContent = "Weak (Short/Simple)";
+                txt.className = "text-xs font-semibold text-red-500";
+            } else if (score === 2) {
+                bar1.className = "h-full w-1/4 bg-orange-400 transition-all-300";
+                bar2.className = "h-full w-1/4 bg-orange-400 transition-all-300";
+                txt.textContent = "Fair";
+                txt.className = "text-xs font-semibold text-orange-400";
+            } else if (score === 3) {
+                bar1.className = "h-full w-1/4 bg-amber-400 transition-all-300";
+                bar2.className = "h-full w-1/4 bg-amber-400 transition-all-300";
+                bar3.className = "h-full w-1/4 bg-amber-400 transition-all-300";
+                txt.textContent = "Good";
+                txt.className = "text-xs font-semibold text-amber-500";
+            } else if (score === 4) {
+                bar1.className = "h-full w-1/4 bg-emerald-500 transition-all-300";
+                bar2.className = "h-full w-1/4 bg-emerald-500 transition-all-300";
+                bar3.className = "h-full w-1/4 bg-emerald-500 transition-all-300";
+                bar4.className = "h-full w-1/4 bg-emerald-500 transition-all-300";
+                txt.textContent = "Strong Lock";
+                txt.className = "text-xs font-semibold text-emerald-500";
+            }
+        });
+
+        // Form Submit Handler: Password Generator
+        document.getElementById('passwordForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const length = document.getElementById('length').value;
+            const resultBox = document.getElementById('result');
+            resultBox.classList.remove('hidden');
+            resultBox.innerHTML = `
+                <div class="flex items-center justify-center py-4 text-emerald-600">
+                    <svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Forging secure key...
+                </div>
+            `;
+            
+            try {
+                const password = await requestPassword(length);
+                const escapedPassword = password.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                
+                resultBox.innerHTML = `
+                    <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-center gap-3">
+                        <div class="overflow-hidden w-full">
+                            <span class="block text-xs text-emerald-600 font-bold uppercase tracking-wider mb-1">Generated Safe Password</span>
+                            <span class="block font-mono text-emerald-800 text-lg select-all break-all" id="secretPassText">${escapedPassword}</span>
+                        </div>
+                        <button 
+                            type="button" 
+                            id="copyGenBtn"
+                            onclick="copyTextToClipboard(document.getElementById('secretPassText').innerText, 'copyGenBtn')"
+                            class="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-semibold transition-all-300 whitespace-nowrap"
+                        >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                            </svg>
+                            Copy Code
+                        </button>
+                    </div>
+                `;
+            } catch (err) {
+                resultBox.innerHTML = `
+                    <div class="p-4 bg-red-50 text-red-600 border border-red-100 rounded-xl text-sm">
+                        Error: Failed to fetch key. Please retry.
+                    </div>
+                `;
+            }
+        });
+
+        // Form Submit Handler: Password Checker
+        document.getElementById('checkForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const password = document.getElementById('password').value;
+            const checkResultBox = document.getElementById('checkResult');
+            checkResultBox.classList.remove('hidden');
+            checkResultBox.innerHTML = `
+                <div class="flex items-center justify-center py-4 text-indigo-600">
+                    <svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Auditing credentials...
+                </div>
+            `;
+
+            try {
+                const result = await checkPassword(password);
+                let output = '';
+
+                if (result.is_strong) {
+                    output = `
+                        <div class="p-4 bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-xl flex items-start gap-3">
+                            <div class="p-1 bg-emerald-100 text-emerald-600 rounded-md mt-0.5">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-emerald-900">Highly Secure Key</h4>
+                                <p class="text-xs text-emerald-600 mt-0.5">Your password meets all baseline industrial strength guidelines!</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Assemble Weak Output details nicely formatted
+                    const suggestionsList = result.suggestions.map(s => `
+                        <li class="flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                            ${s}
+                        </li>
+                    `).join('');
+
+                    const generatedList = result.generated.map((p, idx) => {
+                        const escaped = p.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        return `
+                            <div class="flex justify-between items-center gap-2 bg-white border border-slate-150 p-2.5 rounded-lg">
+                                <code class="text-xs font-mono text-indigo-600 break-all select-all font-semibold" id="altKey-${idx}">${escaped}</code>
+                                <button 
+                                    type="button" 
+                                    id="copyAltBtn-${idx}"
+                                    onclick="copyTextToClipboard(document.getElementById('altKey-${idx}').innerText, 'copyAltBtn-${idx}')"
+                                    class="p-1.5 text-slate-400 hover:text-indigo-600 rounded-md transition-all-300 hover:bg-slate-50"
+                                    title="Copy"
+                                >
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                    </svg>
+                                </button>
+                            </div>
+                        `;
+                    }).join('');
+
+                    output = `
+                        <div class="space-y-4">
+                            <!-- Vulnerability Summary Card -->
+                            <div class="p-4 bg-rose-50 border border-rose-100 text-rose-800 rounded-xl flex items-start gap-3">
+                                <div class="p-1 bg-rose-100 text-rose-600 rounded-md mt-0.5">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                </div>
+                                <div class="space-y-1">
+                                    <h4 class="font-bold text-sm text-rose-900">Weak Password Detected</h4>
+                                    <ul class="text-xs text-rose-700 space-y-1 mt-1 font-medium">
+                                        ${suggestionsList}
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Alternate Safe Alternatives Recommendation Section -->
+                            <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-xl space-y-3">
+                                <h4 class="font-bold text-xs text-indigo-900 uppercase tracking-wide">Suggested Strong Upgrades:</h4>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    ${generatedList}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                checkResultBox.innerHTML = output;
+            } catch (err) {
+                checkResultBox.innerHTML = `
+                    <div class="p-4 bg-red-50 text-red-600 border border-red-100 rounded-xl text-sm">
+                        Audit aborted: Connection timeout.
+                    </div>
+                `;
+            }
+        });
+
+        // Initialize API & Fallback inspections on load
+        window.onload = function() {
+            inspectBackendService();
+        }
+    </script>
+</body>
+</html>

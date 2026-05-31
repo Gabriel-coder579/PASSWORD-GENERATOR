@@ -1,6 +1,5 @@
 # Password Generator
-
-Hey there! This is my little password generator project. I built this web app to help people create strong, secure passwords easily. It's simple to use and runs right in your browser.
+This is my little password generator project. I built this web app to help people create strong, secure passwords easily. It's simple to use and runs right in your browser.
 
 ## What it does
 
@@ -20,15 +19,13 @@ The frontend is a clean HTML page with some JavaScript to handle the user input 
 5. Run the app with `python app.py`.
 6. Open your browser and go to `http://localhost:5000` (or whatever port it's set to).
 
-That's it! The app should be up and running.
-
 ## Technologies I used
 
 - **Python** with Flask for the backend
 - **HTML/CSS** for the frontend structure and styling
 - **JavaScript** for handling user interactions and API calls
 
-I kept it lightweight and didn't use any fancy frameworks - just vanilla stuff to keep things simple.
+I kept it lightweight and didn't use any frameworks - just vanilla js to keep things simple.
 
 ## Why I made this
 
