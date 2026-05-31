@@ -1,6 +1,7 @@
+import os
 import random
 import string
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -51,6 +52,35 @@ def get_suggestions(password):
         suggestions.append("Include at least one special character.")
     # Returning only up to 2 suggestions to keep UI clean
     return suggestions[:2]
+
+
+# --- HOME ROUTE (FIXES THE "NOT FOUND" ERROR) ---
+
+@app.route('/')
+def home():
+    """
+    GET Endpoint: Serves your index.html webpage.
+    This dynamically checks both the 'templates' folder and the root directory
+    to ensure your interface loads successfully!
+    """
+    # Check if index.html is inside a templates directory
+    if os.path.exists(os.path.join('templates', 'index.html')):
+        return send_from_directory('templates', 'index.html')
+    
+    # Check if index.html is directly in the root directory
+    elif os.path.exists('index.html'):
+        return send_from_directory('.', 'index.html')
+    
+    # Elegant fallback message if the front-end file is missing
+    else:
+        return """
+        <div style="font-family: sans-serif; text-align: center; padding: 50px;">
+            <h1 style="color: #4f46e5;">VaultGuard API is Live! 🚀</h1>
+            <p style="color: #64748b;">The backend server is up and running successfully.</p>
+            <p style="color: #ef4444; font-weight: bold;">Notice: Please make sure your 'index.html' file is uploaded to GitHub inside either your main root directory or a folder named 'templates'.</p>
+        </div>
+        """, 200
+
 
 # --- API ENDPOINTS ---
 
