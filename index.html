@@ -20,7 +20,7 @@
         <div class="max-w-4xl mx-auto flex justify-between items-center flex-wrap gap-2">
             <div class="flex items-center gap-2">
                 <span class="w-3 h-3 rounded-full bg-indigo-600 animate-pulse"></span>
-                <span class="font-bold text-slate-800 tracking-tight">VaultGuard</span>
+                <span class="font-bold text-slate-800 tracking-tight">Gabriel </span>
             </div>
             <!-- Dynamic Connection State Badge -->
             <div id="api-status" class="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1 rounded-full flex items-center gap-1.5 font-medium">
@@ -117,7 +117,7 @@
                 </div>
                 <div>
                     <h2 class="text-xl font-bold text-slate-800">Password Generator</h2>
-                    <p class="text-xs text-slate-400">Instantly generate heavy-duty keys</p>
+                    <p class="text-xs text-slate-400">Instantly generate heavy duty keys</p>
                 </div>
             </div>
 
@@ -155,10 +155,10 @@
 
     <!-- Footer credit with client mode indicator -->
     <footer class="w-full text-center py-6 text-slate-400 text-xs border-t border-slate-100 bg-white">
-        <p>© 2026 VaultGuard Secure Corp. Running with automatic offline local engine redundancy.</p>
+        <p>© 2026 Gabriel Secure Corp.</p>
     </footer>
 
-    <!-- EMBEDDED JAVASCRIPT: Unified network controller, local python equivalents and client-side UI dynamics -->
+    <!-- EMBEDDED JAVASCRIPT: Unified network controller and client-side UI dynamics -->
     <script>
         // Constant App Parameters
         const BACKEND_URL = 'https://password-generator-kgvg.onrender.com';
@@ -191,9 +191,9 @@
             }
         });
 
-        // -------------------------------------------------------------
+        
         // LOCAL ENGINE CORE (Direct counterparts of Python logic for resilient fallbacks)
-        // -------------------------------------------------------------
+       
         const PUNCTUATION = '!@#$%^&*()_+-=[]{}|;:,.<>?';
         
         function localGeneratePassword(length = 12) {
@@ -236,7 +236,7 @@
             return suggestions.slice(0, 2);
         }
 
-        // Generate 2 guaranteed strong alternative passwords locally
+        // Generating 2 guaranteed strong alternative passwords.
         function generateLocalStrongAlternatives() {
             const alts = [];
             for (let i = 0; i < 2; i++) {
@@ -249,15 +249,15 @@
             return alts;
         }
 
-        // -------------------------------------------------------------
+    
         // NETWORK API CONTROLLERS
-        // -------------------------------------------------------------
+    
         
-        // Run health check against Render web service on startup
+        // Running health check against Render web service on startup
         async function inspectBackendService() {
             const statusBadge = document.getElementById('api-status');
             try {
-                // Fetch to determine if online (endpoint generates simple sample to test)
+                // Fetching to determine if online (endpoint generates simple sample to test)
                 const response = await fetch(`${BACKEND_URL}/generate`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -274,7 +274,7 @@
                     throw new Error('Server issues');
                 }
             } catch (err) {
-                // If Render takes time or is sleeping, switch smoothly to Sandbox Local Engine
+                // If Render takes time or is sleeping, we switch smoothly to Sandbox Local Engine.
                 statusBadge.innerHTML = `
                     <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
                     Running on Local Sandbox (Resilient Mode)
@@ -284,7 +284,7 @@
             }
         }
 
-        // Generate call handler
+        // Generating call handler. If backend is responsive, use it. If not, silently fallback to local generation without disrupting UX.
         async function requestPassword(length) {
             if (isUsingFallback) {
                 return localGeneratePassword(length);
@@ -304,7 +304,7 @@
             }
         }
 
-        // Check call handler
+        // Checking call handler
         async function checkPassword(password) {
             if (isUsingFallback) {
                 return {
@@ -322,7 +322,7 @@
                 if (!response.ok) throw new Error('Render response error');
                 return await response.json();
             } catch (err) {
-                // Silently check locally upon server failure
+                // Silently checking locally upon server failure
                 return {
                     is_strong: localCheckPasswordStrength(password),
                     suggestions: localGetSuggestions(password),
@@ -331,15 +331,14 @@
             }
         }
 
-        // -------------------------------------------------------------
         // DOM EVENTS & FORM INTERACTION HANDLING
-        // -------------------------------------------------------------
         
-        // Copy to clipboard fallback function per layout rules
+        
+        // Copying to clipboard fallback function per layout rules
         function copyTextToClipboard(text, alertBoxId) {
             const textArea = document.createElement("textarea");
             textArea.value = text;
-            textArea.style.position = "fixed";  // Avoid scrolling to bottom
+            textArea.style.position = "fixed";  // Avoiding scrolling to bottom
             document.body.appendChild(textArea);
             textArea.focus();
             textArea.select();
@@ -369,7 +368,7 @@
             const bar4 = document.getElementById('bar-4');
             const txt = document.getElementById('strengthText');
 
-            // Reset strength meters
+            // Resetting strength meters
             bar1.className = "h-full w-1/4 bg-slate-200 transition-all-300";
             bar2.className = "h-full w-1/4 bg-slate-200 transition-all-300";
             bar3.className = "h-full w-1/4 bg-slate-200 transition-all-300";
@@ -497,7 +496,7 @@
                         </div>
                     `;
                 } else {
-                    // Assemble Weak Output details nicely formatted
+                    // Assembling Weak Output details nicely formatted
                     const suggestionsList = result.suggestions.map(s => `
                         <li class="flex items-center gap-1.5">
                             <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
@@ -562,7 +561,7 @@
             }
         });
 
-        // Initialize API & Fallback inspections on load
+        // Initializing API & Fallback inspections on load
         window.onload = function() {
             inspectBackendService();
         }
